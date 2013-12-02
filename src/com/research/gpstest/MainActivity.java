@@ -1,7 +1,5 @@
 package com.research.gpstest;
 
-import com.research.gpstext.R;
-
 import android.app.Activity;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,6 +12,10 @@ public class MainActivity extends Activity implements LocationListener{
 	private LocationManager mLocationManager;
 	private TextView longView;
 	private TextView latView;
+	private TextView timeView;
+	
+	private long timing;
+	private boolean setTime = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +27,9 @@ public class MainActivity extends Activity implements LocationListener{
 	
 	    longView = (TextView)findViewById(R.id.longitude);
 	    latView = (TextView)findViewById(R.id.latitude);
+	    timeView = (TextView)findViewById(R.id.time);
+	    
+	    timing = System.currentTimeMillis();
 	}
 
 	@Override
@@ -33,15 +38,35 @@ public class MainActivity extends Activity implements LocationListener{
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
+	
+	@Override
+	public void onResume(){
+		super.onResume();
+		timing = System.currentTimeMillis();
+		setTime = false;
+	}
+	
+	@Override
+	public void onDestroy(){
+		super.onDestroy();
+		mLocationManager.removeUpdates(this);
+	}
 
 	@Override
 	public void onLocationChanged(Location location) {
 
-	    int latitude = (int) (location.getLatitude());
-	    int longitude = (int) (location.getLongitude());
+	    float latitude = (float) (location.getLatitude());
+	    float longitude = (float) (location.getLongitude());
 	    
 		longView.setText(String.valueOf(longitude));
 		latView.setText(String.valueOf(latitude));
+		
+		if(!setTime){
+			setTime = true;
+			long new_timing = System.currentTimeMillis();
+			timing = (new_timing - timing)/(long)1000.0;
+			timeView.setText(String.valueOf(timing)+" s");
+		}
 		
 	}
 
